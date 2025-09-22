@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "tele-store"
+version = "0.1.0"
+description = "Telegram bot shop"
+authors = ["Bezdarnost"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.22.0"
+pydantic = "^2.11.9"
+pydantic-settings = "^2.10.1"
+sqlalchemy = "^2.0.43"
+aiosqlite = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
