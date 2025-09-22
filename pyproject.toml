@@ -12,7 +12,54 @@ pydantic = "^2.11.9"
 pydantic-settings = "^2.10.1"
 sqlalchemy = "^2.0.43"
 aiosqlite = "^0.21.0"
+ruff = "^0.13.1"
+mypy = "^1.18.2"
+alembic = "^1.16.5"
+pytest = "^8.4.2"
 
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = [
+    "D100",
+    "D101",
+    "D103",
+    "D104",
+    "D106",
+    "D107",
+    "D203",
+    "D205",
+    "D212",
+    "D400",
+    "D415",
+    "COM812",
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    "PLR0913",
+    "PLR2004",
+    "PD011",
+    "S101",
+]
+select = ["ALL"]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-line-length = "dynamic"
+
+[[tool.mypy.overrides]]
+module = "*.*"
+disable_error_code = [
+    "call-arg",
+    "import-not-found",
+    "import-untyped",
+    "union-attr",
+]
 
 [build-system]
 requires = ["poetry-core"]

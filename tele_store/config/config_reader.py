@@ -1,0 +1,14 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Config class"""
+
+    BOT_TOKEN: str
+    ADMINS: list[int]
+    DATABASE_URL: str
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+
+config = Settings()
