@@ -4,9 +4,12 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from config.config_reader import config
-from handlers import setup_routers
-from models import init_all_databases
+
+from tele_store.config.config_reader import config
+from tele_store.handlers import setup_routers
+from tele_store.models import init_all_databases
+
+logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
@@ -26,6 +29,6 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logging.info("Bot stopped by user")
-    except Exception as e:
-        logging.exception("Unhandled exception: %s", e)
+        logger.info("Bot stopped by user")
+    except Exception:
+        logger.exception("Unhandled exception")

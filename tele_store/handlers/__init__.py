@@ -1,10 +1,10 @@
 from aiogram import Router
 
+from tele_store.handlers.command import start_command_router
+
 
 def setup_routers() -> Router:
-    from .command import start_command_router
-
+    """Создать и настроить основной роутер."""
     router = Router()
     router.include_routers(start_command_router.router)
-
     return router
