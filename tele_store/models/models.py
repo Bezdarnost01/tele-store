@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime  # noqa: TC003
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from db.db import Base
-from db.enums import OrderStatus
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
@@ -22,8 +22,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from tele_store.db.db import Base
+from tele_store.db.enums import OrderStatus
+
 if TYPE_CHECKING:
-    from datetime import datetime
     from decimal import Decimal
 
 convention = {
@@ -49,6 +51,7 @@ class User(Base):
     )
 
     def __repr__(self) -> str:
+        """Строковое представление пользователя для отладки."""
         return f"<User id={self.id} name={self.name!r}>"
 
 
@@ -64,6 +67,7 @@ class Category(Base):
     )
 
     def __repr__(self) -> str:
+        """Строковое представление категории."""
         return f"<Category id={self.id} name={self.name!r}>"
 
 
@@ -89,6 +93,7 @@ class Product(Base):
     __table_args__ = (CheckConstraint("price >= 0", name="price_non_negative"),)
 
     def __repr__(self) -> str:
+        """Строковое представление товара."""
         return f"<Product id={self.id} name={self.name!r} price={self.price}>"
 
 
@@ -109,6 +114,7 @@ class Cart(Base):
     )
 
     def __repr__(self) -> str:
+        """Строковое представление корзины."""
         return f"<Cart id={self.id} user_id={self.user_id}>"
 
 
@@ -134,7 +140,11 @@ class CartItem(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<CartItem cart_id={self.cart_id} product_id={self.product_id} qty={self.quantity}>"
+        """Строковое представление позиции корзины."""
+        return (
+            f"<CartItem cart_id={self.cart_id} "
+            f"product_id={self.product_id} qty={self.quantity}>"
+        )
 
 
 class Order(Base):
@@ -172,7 +182,11 @@ class Order(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Order id={self.id} user_id={self.user_id} status={self.status} total={self.total_price}>"
+        """Строковое представление заказа."""
+        return (
+            f"<Order id={self.id} user_id={self.user_id} "
+            f"status={self.status} total={self.total_price}>"
+        )
 
 
 class OrderItem(Base):
@@ -201,4 +215,8 @@ class OrderItem(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<OrderItem order_id={self.order_id} product_id={self.product_id} qty={self.quantity} price={self.price}>"
+        """Строковое представление позиции заказа."""
+        return (
+            f"<OrderItem order_id={self.order_id} "
+            f"product_id={self.product_id} qty={self.quantity} price={self.price}>"
+        )

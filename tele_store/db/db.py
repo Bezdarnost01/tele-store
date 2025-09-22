@@ -1,4 +1,5 @@
-from config.config_reader import config
+import sqlite3
+
 from sqlalchemy import MetaData, event
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -6,6 +7,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
+
+from tele_store.config.config_reader import config
 
 DATABASE_URL = config.DATABASE_URL
 
@@ -21,7 +24,9 @@ db_sessionmaker = async_sessionmaker(db_engine, expire_on_commit=False)
 
 
 @event.listens_for(db_engine.sync_engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+def set_sqlite_pragma(
+    dbapi_connection: sqlite3.Connection, _connection_record: object
+) -> None:
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
