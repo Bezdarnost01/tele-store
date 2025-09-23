@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 import pytest_asyncio
+from alembic import command
 from alembic.config import Config
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -16,8 +17,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-
-from alembic import command
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator

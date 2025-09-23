@@ -41,6 +41,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    tg_id: Mapped[int] = mapped_column(BigInteger)
     name: Mapped[str | None] = mapped_column(String(128))
     phone: Mapped[str | None] = mapped_column(String(32))
     address: Mapped[str | None] = mapped_column(Text)
@@ -86,7 +87,8 @@ class Product(Base):
 
     category: Mapped[Category] = relationship(back_populates="products")
     cart_items: Mapped[list[CartItem]] = relationship(
-        back_populates="product", cascade="all, delete"
+        back_populates="product", cascade="all, delete",
+        passive_deletes=True
     )
     order_items: Mapped[list[OrderItem]] = relationship(back_populates="product")
 
@@ -101,8 +103,8 @@ class Cart(Base):
     __tablename__ = "carts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True
+    tg_id: Mapped[int] = mapped_column(
+        ForeignKey("users.tg_id", ondelete="CASCADE"), unique=True, index=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -110,12 +112,13 @@ class Cart(Base):
 
     user: Mapped[User] = relationship(back_populates="cart")
     items: Mapped[list[CartItem]] = relationship(
-        back_populates="cart", cascade="all, delete-orphan"
+        back_populates="cart", cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     def __repr__(self) -> str:
         """Строковое представление корзины."""
-        return f"<Cart id={self.id} user_id={self.user_id}>"
+        return f"<Cart id={self.id} tg_id={self.tg_id}>"
 
 
 class CartItem(Base):
@@ -152,12 +155,12 @@ class Order(Base):
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True
-    )  # можно заменить на order_number
+    )
     order_number: Mapped[str] = mapped_column(
         String(32), unique=True, nullable=False, index=True
     )
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    tg_id: Mapped[int] = mapped_column(
+        ForeignKey("users.tg_id", ondelete="SET NULL"), nullable=True, index=True
     )
     total_price: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=0
@@ -174,7 +177,8 @@ class Order(Base):
 
     user: Mapped[User] = relationship(back_populates="orders")
     items: Mapped[list[OrderItem]] = relationship(
-        back_populates="order", cascade="all, delete-orphan"
+        back_populates="order", cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     __table_args__ = (
@@ -184,7 +188,7 @@ class Order(Base):
     def __repr__(self) -> str:
         """Строковое представление заказа."""
         return (
-            f"<Order id={self.id} user_id={self.user_id} "
+            f"<Order id={self.id} tg_id={self.tg_id} "
             f"status={self.status} total={self.total_price}>"
         )
 
@@ -202,7 +206,7 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=False
-    )  # фиксируем цену на момент заказа
+    )
 
     order: Mapped[Order] = relationship(back_populates="items")
     product: Mapped[Product] = relationship(back_populates="order_items")
