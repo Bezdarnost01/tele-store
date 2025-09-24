@@ -13,6 +13,6 @@ class AddNewItem(StatesGroup):
     name = State()
     description = State()
     price = State()
-    category = State()
+    category_id = State()
     photo_file_id = State()
     confirm = State()

@@ -1,10 +1,24 @@
 from aiogram import Router
 
-from tele_store.handlers.command import start_command_router
+from tele_store.handlers.callback import admin_callbacks, callbacks, user_callbacks
+from tele_store.handlers.command import admin_command_router, start_command_router
+from tele_store.handlers.message import admin_message
 
 
 def setup_routers() -> Router:
     """Создать и настроить основной роутер."""
     router = Router()
-    router.include_routers(start_command_router.router)
+
+    routers = [
+        start_command_router.router,
+        admin_command_router.router,
+        admin_callbacks.router,
+        user_callbacks.router,
+        callbacks.router,
+        admin_message.router,
+    ]
+
+    for r in routers:
+        router.include_router(r)
+
     return router

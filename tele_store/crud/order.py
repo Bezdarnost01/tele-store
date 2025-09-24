@@ -26,27 +26,22 @@ class OrderManager:
     """Класс для управления заказами пользователей в базе данных"""
 
     @staticmethod
-    async def create_order(
-        self: AsyncSession,
-        *,
-        payload: CreateOrder
-    ) -> Order:
+    async def create_order(session: AsyncSession, *, payload: CreateOrder) -> Order:
         """Создать заказ."""
         order = Order(
             order_number=payload.order_number,
-            user_id=payload.user_id,
+            tg_id=payload.tg_id,
             total_price=payload.total_price,
             delivery_method=payload.delivery_method,
             status=payload.status,
         )
-        self.add(order)
-        await self.commit()
-        await self.refresh(order)
+        session.add(order)
+        await session.commit()
+        await session.refresh(order)
         return order
 
-
     @staticmethod
-    async def get_order(self: AsyncSession, order_id: int) -> Order | None:
+    async def get_order(session: AsyncSession, order_id: int) -> Order | None:
         """Получить заказ вместе с позициями и данными пользователя."""
         stmt = (
             select(Order)
@@ -56,36 +51,34 @@ class OrderManager:
                 selectinload(Order.user),
             )
         )
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return result.scalar_one_or_none()
-
 
     @staticmethod
     async def list_orders(
-        self: AsyncSession,
+        session: AsyncSession,
         *,
-        user_id: int | None = None,
+        tg_id: int | None = None,
         status: OrderStatus | None = None,
     ) -> list[Order]:
         """Вернуть список заказов с возможностью фильтрации."""
         stmt: Select[tuple[Order]] = select(Order).order_by(Order.created_at.desc())
-        if user_id is not None:
-            stmt = stmt.where(Order.user_id == user_id)
+        if tg_id is not None:
+            stmt = stmt.where(Order.tg_id == tg_id)
         if status is not None:
             stmt = stmt.where(Order.status == status)
 
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return list(result.scalars().all())
-
 
     @staticmethod
     async def update_order(
-        self: AsyncSession,
+        session: AsyncSession,
         order_id: int,
         payload: UpdateOrder,
     ) -> Order | None:
         """Обновить информацию о заказе."""
-        order = await self.get(Order, order_id)
+        order = await session.get(Order, order_id)
         if order is None:
             return None
 
@@ -94,37 +87,32 @@ class OrderManager:
             setattr(order, attr, value)
 
         if updates:
-            await self.commit()
-            await self.refresh(order)
+            await session.commit()
+            await session.refresh(order)
         return order
 
-
     @staticmethod
-    async def delete_order(self: AsyncSession, order_id: int) -> bool:
+    async def delete_order(session: AsyncSession, order_id: int) -> bool:
         """Удалить заказ и все его позиции."""
-        order = await self.get(Order, order_id)
+        order = await session.get(Order, order_id)
         if order is None:
             return False
 
-        await self.delete(order)
-        await self.commit()
+        await session.delete(order)
+        await session.commit()
         return True
 
-
     @staticmethod
-    async def count_orders_by_status(
-        self: AsyncSession, status: OrderStatus
-    ) -> int:
+    async def count_orders_by_status(session: AsyncSession, status: OrderStatus) -> int:
         """Подсчитать количество заказов в заданном статусе."""
         status_subquery = select(Order.id).where(Order.status == status).subquery()
         stmt = select(func.count()).select_from(status_subquery)
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return int(result.scalar_one())
-
 
     @staticmethod
     async def create_order_item(
-        self: AsyncSession,
+        session: AsyncSession,
         payload: CreateOrderItem,
     ) -> OrderItem:
         """Создать позицию заказа."""
@@ -134,22 +122,20 @@ class OrderManager:
             quantity=payload.quantity,
             price=payload.price,
         )
-        self.add(order_item)
-        await self.commit()
-        await self.refresh(order_item)
+        session.add(order_item)
+        await session.commit()
+        await session.refresh(order_item)
         return order_item
-
 
     @staticmethod
     async def get_order_item(
-        self: AsyncSession, order_item_id: int
+        session: AsyncSession, order_item_id: int
     ) -> OrderItem | None:
         """Получить позицию заказа по идентификатору."""
-        return await self.get(OrderItem, order_item_id)
-
+        return await session.get(OrderItem, order_item_id)
 
     @staticmethod
-    async def list_order_items(self: AsyncSession, order_id: int) -> list[OrderItem]:
+    async def list_order_items(session: AsyncSession, order_id: int) -> list[OrderItem]:
         """Получить все позиции конкретного заказа."""
         stmt = (
             select(OrderItem)
@@ -157,18 +143,17 @@ class OrderManager:
             .options(selectinload(OrderItem.product))
             .order_by(OrderItem.id)
         )
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return list(result.scalars().all())
-
 
     @staticmethod
     async def update_order_item(
-        self: AsyncSession,
+        session: AsyncSession,
         order_item_id: int,
         payload: UpdateOrderItem,
     ) -> OrderItem | None:
         """Обновить количество или цену позиции заказа."""
-        order_item = await self.get(OrderItem, order_item_id)
+        order_item = await session.get(OrderItem, order_item_id)
         if order_item is None:
             return None
 
@@ -177,18 +162,17 @@ class OrderManager:
             setattr(order_item, attr, value)
 
         if updates:
-            await self.commit()
-            await self.refresh(order_item)
+            await session.commit()
+            await session.refresh(order_item)
         return order_item
 
-
     @staticmethod
-    async def delete_order_item(self: AsyncSession, order_item_id: int) -> bool:
+    async def delete_order_item(session: AsyncSession, order_item_id: int) -> bool:
         """Удалить позицию заказа."""
-        order_item = await self.get(OrderItem, order_item_id)
+        order_item = await session.get(OrderItem, order_item_id)
         if order_item is None:
             return False
 
-        await self.delete(order_item)
-        await self.commit()
+        await session.delete(order_item)
+        await session.commit()
         return True

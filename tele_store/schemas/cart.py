@@ -6,6 +6,7 @@ class AddCartItem(BaseModel):
     product_id: int
     quantity: int = 1
 
+
 class UpdateCartItemCount(BaseModel):
     cart_item_id: int
     quantity: int

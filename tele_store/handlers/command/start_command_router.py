@@ -1,22 +1,16 @@
 import logging
 
 from aiogram import Router
-from aiogram.filters import Command, CommandObject, CommandStart
+from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-
-from tele_store.filters.admin_filter import IsAdmin
 
 router = Router()
 logger = logging.getLogger(__name__)
 
 
 @router.message(CommandStart())
-async def start_command(message: Message, _command: CommandObject) -> None:
+async def start_command(message: Message, state: FSMContext) -> None:
+    await state.clear()
     user_name = message.from_user.first_name
     await message.answer(f"Привет, {user_name}")
-
-
-@router.message(IsAdmin(), Command("admin"))
-async def admin_command(message: Message, _command: CommandObject) -> None:
-    admin_name = message.from_user.first_name
-    await message.answer(f"Привет, {admin_name}")

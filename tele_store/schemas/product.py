@@ -11,6 +11,7 @@ class CreateProduct(BaseModel):
     photo_file_id: str | None = None
     is_active: bool = True
 
+
 class ProductUpdate(BaseModel):
     category_id: int | None = None
     name: str | None = None

@@ -18,9 +18,7 @@ class ProductManager:
 
     @staticmethod
     async def create_product(
-        self: AsyncSession,
-        *,
-        payload: CreateProduct
+        session: AsyncSession, *, payload: CreateProduct
     ) -> Product:
         """Создать товар и привязать его к категории."""
         product = Product(
@@ -29,29 +27,27 @@ class ProductManager:
             description=payload.description,
             price=payload.price,
             photo_file_id=payload.photo_file_id,
-            is_active=payload.is_active
+            is_active=payload.is_active,
         )
-        self.add(product)
-        await self.commit()
-        await self.refresh(product)
+        session.add(product)
+        await session.commit()
+        await session.refresh(product)
         return product
 
-
     @staticmethod
-    async def get_product(self: AsyncSession, product_id: int) -> Product | None:
+    async def get_product(session: AsyncSession, product_id: int) -> Product | None:
         """Получить товар по идентификатору вместе с категорией."""
         stmt = (
             select(Product)
             .where(Product.id == product_id)
             .options(selectinload(Product.category))
         )
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return result.scalar_one_or_none()
-
 
     @staticmethod
     async def list_products(
-        self: AsyncSession,
+        session: AsyncSession,
         *,
         category_id: int | None = None,
         only_active: bool = True,
@@ -63,16 +59,15 @@ class ProductManager:
         if only_active:
             stmt = stmt.where(Product.is_active.is_(True))
 
-        result = await self.execute(stmt)
+        result = await session.execute(stmt)
         return list(result.scalars().all())
-
 
     @staticmethod
     async def update_product(
-        self: AsyncSession, product_id: int, payload: ProductUpdate
+        session: AsyncSession, product_id: int, payload: ProductUpdate
     ) -> Product | None:
         """Обновить информацию о товаре."""
-        product = await self.get(Product, product_id)
+        product = await session.get(Product, product_id)
         if product is None:
             return None
 
@@ -81,18 +76,17 @@ class ProductManager:
             setattr(product, attr, value)
 
         if update_data:
-            await self.commit()
-            await self.refresh(product)
+            await session.commit()
+            await session.refresh(product)
         return product
 
-
     @staticmethod
-    async def delete_product(self: AsyncSession, product_id: int) -> bool:
+    async def delete_product(session: AsyncSession, product_id: int) -> bool:
         """Удалить товар. Связанные элементы корзины удаляются каскадно."""
-        product = await self.get(Product, product_id)
+        product = await session.get(Product, product_id)
         if product is None:
             return False
 
-        await self.delete(product)
-        await self.commit()
+        await session.delete(product)
+        await session.commit()
         return True

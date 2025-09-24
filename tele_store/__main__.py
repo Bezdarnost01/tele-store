@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 
 from tele_store.config.config_reader import config
 from tele_store.handlers import setup_routers
+from tele_store.middlewares.db import DbSessionMiddleware
 from tele_store.models import init_all_databases
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ async def main() -> None:
     await init_all_databases()
 
     dp = Dispatcher()
+    dp.update.middleware(DbSessionMiddleware())
     dp.include_router(setup_routers())
 
     await dp.start_polling(bot)

@@ -17,14 +17,13 @@ class CartManager:
     """Класс для управления корзинами пользователей в базе данных"""
 
     @staticmethod
-    async def create_cart(self: AsyncSession, *, user_id: int) -> Cart:
+    async def create_cart(self: AsyncSession, *, tg_id: int) -> Cart:
         """Создать корзину пользователя."""
-        cart = Cart(user_id=user_id)
+        cart = Cart(tg_id=tg_id)
         self.add(cart)
         await self.commit()
         await self.refresh(cart)
         return cart
-
 
     @staticmethod
     async def get_cart(self: AsyncSession, cart_id: int) -> Cart | None:
@@ -37,18 +36,16 @@ class CartManager:
         result = await self.execute(stmt)
         return result.scalar_one_or_none()
 
-
     @staticmethod
-    async def get_cart_by_user(self: AsyncSession, user_id: int) -> Cart | None:
+    async def get_cart_by_user(self: AsyncSession, tg_id: int) -> Cart | None:
         """Найти корзину пользователя по идентификатору пользователя."""
         stmt = (
             select(Cart)
-            .where(Cart.user_id == user_id)
+            .where(Cart.tg_id == tg_id)
             .options(selectinload(Cart.items).selectinload(CartItem.product))
         )
         result = await self.execute(stmt)
         return result.scalar_one_or_none()
-
 
     @staticmethod
     async def delete_cart(self: AsyncSession, cart_id: int) -> bool:
@@ -60,7 +57,6 @@ class CartManager:
         await self.delete(cart)
         await self.commit()
         return True
-
 
     @staticmethod
     async def list_cart_items(self: AsyncSession, cart_id: int) -> list[CartItem]:
@@ -75,25 +71,21 @@ class CartManager:
         return list(result.scalars().all())
 
     @staticmethod
-    async def add_cart_item(
-        self: AsyncSession,
-        *,
-        payload: AddCartItem
-    ) -> CartItem:
+    async def add_cart_item(self: AsyncSession, *, payload: AddCartItem) -> CartItem:
         """Добавить товар в корзину."""
-        cart_item = CartItem(cart_id=payload.cart_id,
-                             product_id=payload.product_id,
-                             quantity=payload.quantity)
+        cart_item = CartItem(
+            cart_id=payload.cart_id,
+            product_id=payload.product_id,
+            quantity=payload.quantity,
+        )
         self.add(cart_item)
         await self.commit()
         await self.refresh(cart_item)
         return cart_item
 
-
     @staticmethod
     async def update_cart_item_count(
-        self: AsyncSession,
-        payload: UpdateCartItemCount
+        self: AsyncSession, payload: UpdateCartItemCount
     ) -> CartItem | None:
         """Обновить количество товара в корзине."""
         cart_item = await self.get(CartItem, payload.cart_item_id)
@@ -104,7 +96,6 @@ class CartManager:
         await self.commit()
         await self.refresh(cart_item)
         return cart_item
-
 
     @staticmethod
     async def delete_cart_item(self: AsyncSession, cart_item_id: int) -> bool:

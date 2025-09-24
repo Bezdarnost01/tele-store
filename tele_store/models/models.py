@@ -87,8 +87,7 @@ class Product(Base):
 
     category: Mapped[Category] = relationship(back_populates="products")
     cart_items: Mapped[list[CartItem]] = relationship(
-        back_populates="product", cascade="all, delete",
-        passive_deletes=True
+        back_populates="product", cascade="all, delete", passive_deletes=True
     )
     order_items: Mapped[list[OrderItem]] = relationship(back_populates="product")
 
@@ -112,8 +111,7 @@ class Cart(Base):
 
     user: Mapped[User] = relationship(back_populates="cart")
     items: Mapped[list[CartItem]] = relationship(
-        back_populates="cart", cascade="all, delete-orphan",
-        passive_deletes=True
+        back_populates="cart", cascade="all, delete-orphan", passive_deletes=True
     )
 
     def __repr__(self) -> str:
@@ -153,9 +151,7 @@ class CartItem(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     order_number: Mapped[str] = mapped_column(
         String(32), unique=True, nullable=False, index=True
     )
@@ -177,8 +173,7 @@ class Order(Base):
 
     user: Mapped[User] = relationship(back_populates="orders")
     items: Mapped[list[OrderItem]] = relationship(
-        back_populates="order", cascade="all, delete-orphan",
-        passive_deletes=True
+        back_populates="order", cascade="all, delete-orphan", passive_deletes=True
     )
 
     __table_args__ = (
@@ -204,9 +199,7 @@ class OrderItem(Base):
         ForeignKey("products.id", ondelete="RESTRICT"), index=True
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    price: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), nullable=False
-    )
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     order: Mapped[Order] = relationship(back_populates="items")
     product: Mapped[Product] = relationship(back_populates="order_items")

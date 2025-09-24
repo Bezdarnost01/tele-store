@@ -39,11 +39,9 @@ class UserManager:
             await session.refresh(user)
             return user
 
-
     async def get_user(self: AsyncSession, user_id: int) -> User | None:
         """Получить пользователя по идентификатору."""
         return await self.get(User, user_id)
-
 
     @staticmethod
     async def list_users(
@@ -58,7 +56,6 @@ class UserManager:
             stmt = stmt.limit(limit)
         result = await self.execute(stmt)
         return list(result.scalars().all())
-
 
     @staticmethod
     async def update_user(
@@ -77,7 +74,6 @@ class UserManager:
             await self.commit()
             await self.refresh(user)
         return user
-
 
     @staticmethod
     async def delete_user(self: AsyncSession, user_id: int) -> bool:

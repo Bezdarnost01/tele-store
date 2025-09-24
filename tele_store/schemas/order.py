@@ -12,6 +12,7 @@ class CreateOrder(BaseModel):
     delivery_method: str | None = None
     status: OrderStatus = OrderStatus.NEW
 
+
 class UpdateOrder(BaseModel):
     order_number: str | None = None
     user_id: int | None = None
@@ -19,11 +20,13 @@ class UpdateOrder(BaseModel):
     delivery_method: str | None = None
     status: OrderStatus | None = None
 
+
 class CreateOrderItem(BaseModel):
     order_id: int
     product_id: int
     quantity: int
     price: Decimal
+
 
 class UpdateOrderItem(BaseModel):
     quantity: int | None = None

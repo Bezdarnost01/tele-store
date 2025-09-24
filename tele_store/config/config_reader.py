@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     BOT_TOKEN: str
     ADMINS: list[int]
     DATABASE_URL: str
+    ITEMS_PER_PAGE: int
+    ORDERS_PER_PAGE: int
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

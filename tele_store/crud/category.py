@@ -24,19 +24,16 @@ class CategoryManager:
         await self.refresh(category)
         return category
 
-
     @staticmethod
     async def get_category(self: AsyncSession, category_id: int) -> Category | None:
         """Получить категорию по идентификатору."""
         return await self.get(Category, category_id)
-
 
     @staticmethod
     async def list_categories(self: AsyncSession) -> list[Category]:
         """Вернуть все категории, отсортированные по имени."""
         result = await self.execute(select(Category).order_by(Category.name))
         return list(result.scalars().all())
-
 
     @staticmethod
     async def update_category(
@@ -61,7 +58,6 @@ class CategoryManager:
             await self.refresh(category)
 
         return category
-
 
     @staticmethod
     async def delete_category(self: AsyncSession, category_id: int) -> bool:
