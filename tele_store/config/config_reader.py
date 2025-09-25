@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     ITEMS_PER_PAGE: int
     ORDERS_PER_PAGE: int
+    CATEGORIES_PER_PAGE: int
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

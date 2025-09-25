@@ -15,36 +15,36 @@ class CategoryManager:
 
     @staticmethod
     async def create_category(
-        self: AsyncSession, *, name: str, description: str | None = None
+        session: AsyncSession, *, name: str, description: str | None = None
     ) -> Category:
         """Создать новую категорию товаров."""
         category = Category(name=name, description=description)
-        self.add(category)
-        await self.commit()
-        await self.refresh(category)
+        session.add(category)
+        await session.commit()
+        await session.refresh(category)
         return category
 
     @staticmethod
-    async def get_category(self: AsyncSession, category_id: int) -> Category | None:
+    async def get_category(session: AsyncSession, category_id: int) -> Category | None:
         """Получить категорию по идентификатору."""
-        return await self.get(Category, category_id)
+        return await session.get(Category, category_id)
 
     @staticmethod
-    async def list_categories(self: AsyncSession) -> list[Category]:
+    async def list_categories(session: AsyncSession) -> list[Category]:
         """Вернуть все категории, отсортированные по имени."""
-        result = await self.execute(select(Category).order_by(Category.name))
+        result = await session.execute(select(Category).order_by(Category.name))
         return list(result.scalars().all())
 
     @staticmethod
     async def update_category(
-        self: AsyncSession,
+        session: AsyncSession,
         category_id: int,
         *,
         name: str | None = None,
         description: str | None = None,
     ) -> Category | None:
         """Обновить имя или описание категории."""
-        category = await self.get(Category, category_id)
+        category = await session.get(Category, category_id)
         if category is None:
             return None
 
@@ -54,18 +54,18 @@ class CategoryManager:
             category.description = description
 
         if name is not None or description is not None:
-            await self.commit()
-            await self.refresh(category)
+            await session.commit()
+            await session.refresh(category)
 
         return category
 
     @staticmethod
-    async def delete_category(self: AsyncSession, category_id: int) -> bool:
+    async def delete_category(session: AsyncSession, category_id: int) -> bool:
         """Удалить категорию вместе со связанными товарами."""
-        category = await self.get(Category, category_id)
+        category = await session.get(Category, category_id)
         if category is None:
             return False
 
-        await self.delete(category)
-        await self.commit()
+        await session.delete(category)
+        await session.commit()
         return True

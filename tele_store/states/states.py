@@ -16,3 +16,9 @@ class AddNewItem(StatesGroup):
     category_id = State()
     photo_file_id = State()
     confirm = State()
+
+
+class AddNewCategory(StatesGroup):
+    name = State()
+    description = State()
+    confirm = State()

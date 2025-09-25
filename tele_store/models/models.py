@@ -40,11 +40,10 @@ convention = {
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    tg_id: Mapped[int] = mapped_column(BigInteger)
-    name: Mapped[str | None] = mapped_column(String(128))
-    phone: Mapped[str | None] = mapped_column(String(32))
-    address: Mapped[str | None] = mapped_column(Text)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tg_id: Mapped[int] = mapped_column(
+        BigInteger, unique=True, index=True, nullable=False
+    )
 
     cart: Mapped[Cart] = relationship(back_populates="user", uselist=False)
     orders: Mapped[list[Order]] = relationship(
@@ -53,7 +52,7 @@ class User(Base):
 
     def __repr__(self) -> str:
         """Строковое представление пользователя для отладки."""
-        return f"<User id={self.id} name={self.name!r}>"
+        return f"<User id={self.id} tg_id={self.tg_id!r}>"
 
 
 class Category(Base):

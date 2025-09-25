@@ -8,7 +8,10 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     builder.row(
-        InlineKeyboardButton(text="➕ Добавить товар", callback_data="add_new_item")
+        InlineKeyboardButton(text="➕ Добавить товар", callback_data="add_new_item"),
+        InlineKeyboardButton(
+            text="➕ Добавить категорию", callback_data="add_new_category"
+        ),
     )
     builder.row(
         InlineKeyboardButton(
@@ -20,6 +23,12 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text="📜 Список заказов",
             callback_data="orders_list",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="📜 Список категорий",
+            callback_data="categories_list",
         )
     )
 

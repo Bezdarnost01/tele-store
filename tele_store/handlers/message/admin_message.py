@@ -6,9 +6,12 @@ from typing import TYPE_CHECKING
 
 from aiogram import F, Router
 
+from tele_store.keyboards.inline.add_category_confirm_menu import (
+    add_category_confirm_keyboard,
+)
 from tele_store.keyboards.inline.add_item_confirm_menu import add_item_confirm_keyboard
 from tele_store.keyboards.inline.cancel_button import cancel_key
-from tele_store.states.states import AddNewItem
+from tele_store.states.states import AddNewCategory, AddNewItem
 
 if TYPE_CHECKING:
     from aiogram.fsm.context import FSMContext
@@ -104,3 +107,34 @@ async def add_new_item_photo(message: Message, state: FSMContext) -> None:
 @router.message(AddNewItem.photo_file_id)
 async def add_new_item_photo_invalid(message: Message, state: FSMContext) -> None:
     await message.answer("❌ Нужно отправить именно фото. Попробуйте снова.")
+
+
+@router.message(AddNewCategory.name)
+async def add_new_category_name(message: Message, state: FSMContext) -> None:
+    text = message.text.strip()
+    if not text:
+        await message.answer("❌ Название не может быть пустым. Введите снова:")
+        return
+
+    await state.update_data(name=text)
+    await state.set_state(AddNewCategory.description)
+    await message.answer("Опишите категорию:", reply_markup=cancel_key())
+
+
+@router.message(AddNewCategory.description)
+async def add_new_category_description(message: Message, state: FSMContext) -> None:
+    text = message.text.strip()
+    if not text:
+        await message.answer("❌ Описание не может быть пустым. Введите снова:")
+        return
+
+    await state.update_data(description=text)
+    await state.set_state(AddNewCategory.confirm)
+    data = await state.get_data()
+    preview = (
+        f"📦 <b>Новая категория</b>\n\n"
+        f"Название: {data['name']}\n"
+        f"Описание: {data['description']}\n"
+        "Подтвердить добавление?"
+    )
+    await message.answer(text=preview, reply_markup=add_category_confirm_keyboard())
