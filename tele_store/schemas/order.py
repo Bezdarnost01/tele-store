@@ -7,7 +7,7 @@ from tele_store.db.enums import OrderStatus
 
 class CreateOrder(BaseModel):
     order_number: str
-    user_id: int | None = None
+    tg_id: int | None = None
     total_price: Decimal = Decimal(0)
     delivery_method: str | None = None
     status: OrderStatus = OrderStatus.NEW
@@ -15,7 +15,7 @@ class CreateOrder(BaseModel):
 
 class UpdateOrder(BaseModel):
     order_number: str | None = None
-    user_id: int | None = None
+    tg_id: int | None = None
     total_price: Decimal | None = None
     delivery_method: str | None = None
     status: OrderStatus | None = None
