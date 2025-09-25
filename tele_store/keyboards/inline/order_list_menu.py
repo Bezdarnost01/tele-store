@@ -17,22 +17,22 @@ async def get_order_list_menu_keyboard(
 ) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    item_list = await OrderManager.list_orders(session=session)
+    order_list = await OrderManager.list_orders(session=session)
 
     start = (page - 1) * config.ORDERS_PER_PAGE
     end = start + config.ORDERS_PER_PAGE
-    page_items = item_list[start:end]
+    page_orders = order_list[start:end]
 
-    for item in page_items:
+    for order in page_orders:
         builder.row(
             InlineKeyboardButton(
-                text=f"{item.name} — {item.price} ₽",
-                callback_data=f"item_preview:{item.id}",
+                text=f"{order.order_number}",
+                callback_data=f"order_preview:{order.id}",
             )
         )
 
     total_pages = (
-        len(item_list) + config.ORDERS_PER_PAGE - 1
+        len(order_list) + config.ORDERS_PER_PAGE - 1
     ) // config.ORDERS_PER_PAGE
     pagination_buttons = []
 
