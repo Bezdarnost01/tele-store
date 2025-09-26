@@ -6,7 +6,6 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def order_confirm_keyboard() -> InlineKeyboardMarkup:
     """Клавиатура подтверждения оформления заказа."""
-
     builder = InlineKeyboardBuilder()
 
     builder.row(

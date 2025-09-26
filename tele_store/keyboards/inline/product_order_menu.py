@@ -11,7 +11,6 @@ def product_order_keyboard(
     page: int,
 ) -> InlineKeyboardMarkup:
     """Клавиатура с кнопками для оформления заказа товара."""
-
     builder = InlineKeyboardBuilder()
 
     builder.row(

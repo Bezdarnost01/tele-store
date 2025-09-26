@@ -13,13 +13,13 @@ if TYPE_CHECKING:
 
 
 async def get_catalog_list_menu_keyboard(
-    session: AsyncSession,
-    category_id: int,
-    page: int = 1
+    session: AsyncSession, category_id: int, page: int = 1
 ) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    product_list = await ProductManager.list_products(session=session, category_id=category_id)
+    product_list = await ProductManager.list_products(
+        session=session, category_id=category_id
+    )
 
     start = (page - 1) * config.PRODUCTS_PER_PAGE
     end = start + config.PRODUCTS_PER_PAGE

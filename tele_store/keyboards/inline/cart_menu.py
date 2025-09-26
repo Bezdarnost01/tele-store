@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from tele_store.models.models import Cart
+if TYPE_CHECKING:
+    from tele_store.models.models import Cart
 
 
 def build_cart_keyboard(cart: Cart) -> InlineKeyboardMarkup:
     """Собрать клавиатуру управления корзиной."""
-
     builder = InlineKeyboardBuilder()
 
     for item in cart.items:

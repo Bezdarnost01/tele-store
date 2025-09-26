@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
 
 from tele_store.crud.cart import CartManager
 from tele_store.crud.category import CategoryManager
@@ -16,16 +14,19 @@ from tele_store.crud.order import OrderManager
 from tele_store.crud.product import ProductManager
 from tele_store.keyboards.inline.cancel_button import cancel_key
 from tele_store.keyboards.inline.cart_menu import build_cart_keyboard
+from tele_store.keyboards.inline.order_confirm_menu import order_confirm_keyboard
 from tele_store.keyboards.inline.product_order_menu import product_order_keyboard
 from tele_store.keyboards.inline.user_category_menu import get_user_category_keyboard
 from tele_store.keyboards.inline.user_product_menu import get_user_product_keyboard
-from tele_store.keyboards.inline.order_confirm_menu import order_confirm_keyboard
 from tele_store.schemas.cart import AddCartItem, UpdateCartItemCount
 from tele_store.schemas.order import CreateOrder, CreateOrderItem
 from tele_store.states.states import NewDelivery
 
 if TYPE_CHECKING:
+    from aiogram.fsm.context import FSMContext
+    from aiogram.types import CallbackQuery
     from sqlalchemy.ext.asyncio import AsyncSession
+
     from tele_store.models.models import Cart
 
 router = Router()
@@ -34,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 def generate_order_number() -> str:
     """Сгенерировать короткий номер заказа."""
-
     return secrets.token_hex(4).upper()
 
 
@@ -43,14 +43,12 @@ MONEY_STEP = Decimal("0.01")
 
 def format_money(amount: Decimal) -> str:
     """Отформатировать цену для отображения пользователю."""
-
     return f"{amount.quantize(MONEY_STEP)} ₽"
 
 
 def collect_cart_lines(cart: Cart) -> tuple[list[str], Decimal]:
     """Собрать список строк с содержимым корзины и подсчитать сумму."""
-
-    total = Decimal("0")
+    total = Decimal(0)
     lines: list[str] = []
 
     for index, item in enumerate(cart.items, start=1):
@@ -70,7 +68,6 @@ def collect_cart_lines(cart: Cart) -> tuple[list[str], Decimal]:
 
 def build_cart_text(cart: Cart) -> str:
     """Подготовить текстовое представление корзины."""
-
     lines, total = collect_cart_lines(cart)
     if not lines:
         return "🛒 Сейчас ваша корзина пуста."
@@ -86,7 +83,6 @@ def build_cart_text(cart: Cart) -> str:
 
 def build_order_preview_text(cart: Cart, data: dict[str, object]) -> str:
     """Сформировать текст подтверждения заказа."""
-
     lines, total = collect_cart_lines(cart)
     items_text = "\n".join(lines) if lines else "Корзина пуста"
 
@@ -102,11 +98,8 @@ def build_order_preview_text(cart: Cart, data: dict[str, object]) -> str:
     )
 
 
-async def sanitize_cart(
-    session: "AsyncSession", cart: Cart
-) -> Cart | None:
+async def sanitize_cart(session: AsyncSession, cart: Cart) -> Cart | None:
     """Удалить из корзины недоступные товары и вернуть актуальную корзину."""
-
     removed = False
     for item in list(cart.items):
         product = item.product
@@ -115,20 +108,13 @@ async def sanitize_cart(
             removed = True
 
     if removed:
-        return await CartManager.get_cart_by_user(
-            session=session, tg_id=cart.tg_id
-        )
+        return await CartManager.get_cart_by_user(session=session, tg_id=cart.tg_id)
     return cart
 
 
-async def refresh_cart_view(
-    call: CallbackQuery, session: "AsyncSession"
-) -> Cart | None:
+async def refresh_cart_view(call: CallbackQuery, session: AsyncSession) -> Cart | None:
     """Перерисовать сообщение с корзиной."""
-
-    cart = await CartManager.get_cart_by_user(
-        session=session, tg_id=call.from_user.id
-    )
+    cart = await CartManager.get_cart_by_user(session=session, tg_id=call.from_user.id)
     if cart is None:
         try:
             await call.message.edit_text("🛒 Сейчас ваша корзина пуста.")
@@ -157,7 +143,6 @@ async def refresh_cart_view(
 @router.callback_query(F.data == "catalog")
 async def open_catalog(call: CallbackQuery, session: AsyncSession) -> None:
     """Показать пользователю список категорий."""
-
     keyboard, total = await get_user_category_keyboard(session=session)
 
     if total == 0:
@@ -171,7 +156,6 @@ async def open_catalog(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data == "back_to_categories")
 async def back_to_categories(call: CallbackQuery, session: AsyncSession) -> None:
     """Вернуться к списку категорий."""
-
     keyboard, total = await get_user_category_keyboard(session=session)
 
     if total == 0:
@@ -191,7 +175,6 @@ async def back_to_categories(call: CallbackQuery, session: AsyncSession) -> None
 @router.callback_query(F.data.startswith("user_category_page:"))
 async def paginate_categories(call: CallbackQuery, session: AsyncSession) -> None:
     """Переключение страниц списка категорий."""
-
     page = int(call.data.split(":")[1])
     keyboard, total = await get_user_category_keyboard(session=session, page=page)
 
@@ -206,11 +189,12 @@ async def paginate_categories(call: CallbackQuery, session: AsyncSession) -> Non
 @router.callback_query(F.data.startswith("user_category:"))
 async def open_category(call: CallbackQuery, session: AsyncSession) -> None:
     """Показать товары выбранной категории."""
-
     _, category_id_raw, *_ = call.data.split(":")
     category_id = int(category_id_raw)
 
-    category = await CategoryManager.get_category(session=session, category_id=category_id)
+    category = await CategoryManager.get_category(
+        session=session, category_id=category_id
+    )
 
     if category is None:
         await call.answer("Категория не найдена.", show_alert=True)
@@ -234,7 +218,6 @@ async def open_category(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data.startswith("user_product_page:"))
 async def paginate_products(call: CallbackQuery, session: AsyncSession) -> None:
     """Переключение страниц товаров внутри категории."""
-
     _, category_raw, page_raw = call.data.split(":")
     category_id = int(category_raw)
     page = int(page_raw)
@@ -254,7 +237,6 @@ async def paginate_products(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data.startswith("user_product:"))
 async def show_product_preview(call: CallbackQuery, session: AsyncSession) -> None:
     """Показать карточку товара с предложением оформить заказ."""
-
     _, product_raw, category_raw, page_raw = call.data.split(":")
     product_id = int(product_raw)
     category_id = int(category_raw)
@@ -291,10 +273,7 @@ async def show_product_preview(call: CallbackQuery, session: AsyncSession) -> No
 @router.callback_query(F.data == "cart")
 async def open_cart(call: CallbackQuery, session: AsyncSession) -> None:
     """Показать пользователю содержимое корзины."""
-
-    cart = await CartManager.get_cart_by_user(
-        session=session, tg_id=call.from_user.id
-    )
+    cart = await CartManager.get_cart_by_user(session=session, tg_id=call.from_user.id)
     cleaned_cart = await sanitize_cart(session, cart) if cart else cart
 
     if cleaned_cart is None or not cleaned_cart.items:
@@ -317,7 +296,6 @@ async def open_cart(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data == "cancel_order")
 async def cancel_order(call: CallbackQuery, state: FSMContext) -> None:
     """Отменить оформление заказа и очистить состояние."""
-
     if await state.get_state() is not None:
         await state.clear()
     try:
@@ -332,7 +310,6 @@ async def cancel_order(call: CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(F.data.startswith("add_to_cart:"))
 async def add_product_to_cart(call: CallbackQuery, session: AsyncSession) -> None:
     """Добавить выбранный товар в корзину пользователя."""
-
     product_id = int(call.data.split(":")[1])
     product = await ProductManager.get_product(session=session, product_id=product_id)
 
@@ -340,9 +317,7 @@ async def add_product_to_cart(call: CallbackQuery, session: AsyncSession) -> Non
         await call.answer("Товар недоступен для добавления.", show_alert=True)
         return
 
-    cart = await CartManager.get_cart_by_user(
-        session=session, tg_id=call.from_user.id
-    )
+    cart = await CartManager.get_cart_by_user(session=session, tg_id=call.from_user.id)
     if cart is None:
         cart = await CartManager.create_cart(session=session, tg_id=call.from_user.id)
 
@@ -370,11 +345,8 @@ async def add_product_to_cart(call: CallbackQuery, session: AsyncSession) -> Non
 @router.callback_query(F.data.startswith("cart_increase:"))
 async def increase_cart_item(call: CallbackQuery, session: AsyncSession) -> None:
     """Увеличить количество товара в корзине."""
-
     item_id = int(call.data.split(":")[1])
-    cart_item = await CartManager.get_cart_item(
-        session=session, cart_item_id=item_id
-    )
+    cart_item = await CartManager.get_cart_item(session=session, cart_item_id=item_id)
 
     if cart_item is None or cart_item.cart.tg_id != call.from_user.id:
         await call.answer("Товар не найден в корзине.", show_alert=True)
@@ -395,11 +367,8 @@ async def increase_cart_item(call: CallbackQuery, session: AsyncSession) -> None
 @router.callback_query(F.data.startswith("cart_decrease:"))
 async def decrease_cart_item(call: CallbackQuery, session: AsyncSession) -> None:
     """Уменьшить количество товара в корзине."""
-
     item_id = int(call.data.split(":")[1])
-    cart_item = await CartManager.get_cart_item(
-        session=session, cart_item_id=item_id
-    )
+    cart_item = await CartManager.get_cart_item(session=session, cart_item_id=item_id)
 
     if cart_item is None or cart_item.cart.tg_id != call.from_user.id:
         await call.answer("Товар не найден в корзине.", show_alert=True)
@@ -427,11 +396,8 @@ async def decrease_cart_item(call: CallbackQuery, session: AsyncSession) -> None
 @router.callback_query(F.data.startswith("cart_remove:"))
 async def remove_cart_item(call: CallbackQuery, session: AsyncSession) -> None:
     """Удалить выбранный товар из корзины."""
-
     item_id = int(call.data.split(":")[1])
-    cart_item = await CartManager.get_cart_item(
-        session=session, cart_item_id=item_id
-    )
+    cart_item = await CartManager.get_cart_item(session=session, cart_item_id=item_id)
 
     if cart_item is None or cart_item.cart.tg_id != call.from_user.id:
         await call.answer("Товар уже отсутствует в корзине.", show_alert=True)
@@ -445,10 +411,7 @@ async def remove_cart_item(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data == "cart_clear")
 async def clear_cart(call: CallbackQuery, session: AsyncSession) -> None:
     """Полностью очистить корзину пользователя."""
-
-    cart = await CartManager.get_cart_by_user(
-        session=session, tg_id=call.from_user.id
-    )
+    cart = await CartManager.get_cart_by_user(session=session, tg_id=call.from_user.id)
     if cart is None or not cart.items:
         await call.answer("Корзина уже пуста.", show_alert=True)
         return
@@ -461,7 +424,6 @@ async def clear_cart(call: CallbackQuery, session: AsyncSession) -> None:
 @router.callback_query(F.data.startswith("cart_ignore:"))
 async def ignore_cart_info(call: CallbackQuery) -> None:
     """Обработать нажатие на неактивную кнопку количества."""
-
     await call.answer()
 
 
@@ -470,12 +432,11 @@ async def start_checkout(
     call: CallbackQuery, session: AsyncSession, state: FSMContext
 ) -> None:
     """Запустить процесс оформления заказа из корзины."""
-
-    cart = await CartManager.get_cart_by_user(
-        session=session, tg_id=call.from_user.id
-    )
+    cart = await CartManager.get_cart_by_user(session=session, tg_id=call.from_user.id)
     if cart is None or not cart.items:
-        await call.answer("Корзина пуста. Добавьте товары перед оформлением.", show_alert=True)
+        await call.answer(
+            "Корзина пуста. Добавьте товары перед оформлением.", show_alert=True
+        )
         await refresh_cart_view(call, session)
         return
 
@@ -499,7 +460,9 @@ async def start_checkout(
             reply_markup=cancel_key(),
         )
     except TelegramBadRequest:
-        logger.debug("Не удалось обновить сообщение корзины перед оформлением", exc_info=True)
+        logger.debug(
+            "Не удалось обновить сообщение корзины перед оформлением", exc_info=True
+        )
         await call.message.answer(
             "Отличный выбор! Давай оформим заказ. Как к тебе обращаться?",
             reply_markup=cancel_key(),
@@ -507,17 +470,13 @@ async def start_checkout(
 
 
 @router.callback_query(
-    NewDelivery.delivery_method,
-    F.data.in_(["select_courier", "select_self-delivery"])
+    NewDelivery.delivery_method, F.data.in_(["select_courier", "select_self-delivery"])
 )
 async def choose_delivery_method(
     call: CallbackQuery, session: AsyncSession, state: FSMContext
 ) -> None:
     """Получить желаемый способ доставки перед подтверждением заказа."""
-
-    delivery_method = (
-        "Курьер" if call.data == "select_courier" else "Самовывоз"
-    )
+    delivery_method = "Курьер" if call.data == "select_courier" else "Самовывоз"
 
     await state.update_data(delivery_method=delivery_method)
     await state.set_state(NewDelivery.confirm)
@@ -555,7 +514,6 @@ async def confirm_order(
     call: CallbackQuery, session: AsyncSession, state: FSMContext
 ) -> None:
     """Подтвердить заказ из корзины и сохранить его в базе."""
-
     data = await state.get_data()
     cart_id = data.get("cart_id")
 
@@ -591,6 +549,9 @@ async def confirm_order(
     order_payload = CreateOrder(
         order_number=order_number,
         tg_id=call.from_user.id,
+        name=data.get("name"),
+        phone=data.get("phone_number"),
+        addres=data.get("address"),
         total_price=total_price,
         delivery_method=data.get("delivery_method"),
     )

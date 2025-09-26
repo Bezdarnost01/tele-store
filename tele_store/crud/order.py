@@ -31,6 +31,9 @@ class OrderManager:
         order = Order(
             order_number=payload.order_number,
             tg_id=payload.tg_id,
+            name=payload.name,
+            phone=payload.phone,
+            addres=payload.addres,
             total_price=payload.total_price,
             delivery_method=payload.delivery_method,
             status=payload.status,

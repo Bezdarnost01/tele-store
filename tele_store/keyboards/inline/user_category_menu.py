@@ -18,7 +18,6 @@ async def get_user_category_keyboard(
     page: int = 1,
 ) -> tuple[InlineKeyboardMarkup, int]:
     """Сформировать клавиатуру с категориями для пользователя."""
-
     builder = InlineKeyboardBuilder()
 
     categories = await CategoryManager.list_categories(session=session)
@@ -35,7 +34,9 @@ async def get_user_category_keyboard(
             )
         )
 
-    total_pages = (len(categories) + config.CATEGORIES_PER_PAGE - 1) // config.CATEGORIES_PER_PAGE
+    total_pages = (
+        len(categories) + config.CATEGORIES_PER_PAGE - 1
+    ) // config.CATEGORIES_PER_PAGE
     pagination_buttons = []
 
     if page > 1:

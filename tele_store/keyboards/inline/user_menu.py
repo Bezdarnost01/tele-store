@@ -7,13 +7,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 def user_menu_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    builder.row(
-        InlineKeyboardButton(
-            text="📜 Каталог", 
-            callback_data="catalog"
-            )
-        )
-    
+    builder.row(InlineKeyboardButton(text="📜 Каталог", callback_data="catalog"))
+
     builder.row(
         InlineKeyboardButton(
             text="🛒 Корзина",

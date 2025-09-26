@@ -19,7 +19,6 @@ class CartManager:
     @staticmethod
     async def create_cart(session: AsyncSession, *, tg_id: int) -> Cart:
         """Создать корзину пользователя."""
-
         cart = Cart(tg_id=tg_id)
         session.add(cart)
         await session.commit()
@@ -29,7 +28,6 @@ class CartManager:
     @staticmethod
     async def get_cart(session: AsyncSession, cart_id: int) -> Cart | None:
         """Получить корзину по её идентификатору вместе с товарами."""
-
         stmt = (
             select(Cart)
             .where(Cart.id == cart_id)
@@ -41,7 +39,6 @@ class CartManager:
     @staticmethod
     async def get_cart_by_user(session: AsyncSession, tg_id: int) -> Cart | None:
         """Найти корзину пользователя по идентификатору пользователя."""
-
         stmt = (
             select(Cart)
             .where(Cart.tg_id == tg_id)
@@ -53,7 +50,6 @@ class CartManager:
     @staticmethod
     async def delete_cart(session: AsyncSession, cart_id: int) -> bool:
         """Удалить корзину и связанные элементы."""
-
         cart = await session.get(Cart, cart_id)
         if cart is None:
             return False
@@ -65,7 +61,6 @@ class CartManager:
     @staticmethod
     async def list_cart_items(session: AsyncSession, cart_id: int) -> list[CartItem]:
         """Вернуть содержимое корзины."""
-
         stmt = (
             select(CartItem)
             .where(CartItem.cart_id == cart_id)
@@ -80,13 +75,10 @@ class CartManager:
         session: AsyncSession, cart_item_id: int
     ) -> CartItem | None:
         """Получить конкретный товар из корзины."""
-
         stmt = (
             select(CartItem)
             .where(CartItem.id == cart_item_id)
-            .options(
-                selectinload(CartItem.product), selectinload(CartItem.cart)
-            )
+            .options(selectinload(CartItem.product), selectinload(CartItem.cart))
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
@@ -96,7 +88,6 @@ class CartManager:
         session: AsyncSession, *, cart_id: int, product_id: int
     ) -> CartItem | None:
         """Найти товар в корзине по идентификатору продукта."""
-
         stmt = (
             select(CartItem)
             .where(
@@ -109,11 +100,8 @@ class CartManager:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def add_cart_item(
-        session: AsyncSession, *, payload: AddCartItem
-    ) -> CartItem:
+    async def add_cart_item(session: AsyncSession, *, payload: AddCartItem) -> CartItem:
         """Добавить товар в корзину."""
-
         cart_item = CartItem(
             cart_id=payload.cart_id,
             product_id=payload.product_id,
@@ -129,7 +117,6 @@ class CartManager:
         session: AsyncSession, payload: UpdateCartItemCount
     ) -> CartItem | None:
         """Обновить количество товара в корзине."""
-
         cart_item = await session.get(CartItem, payload.cart_item_id)
         if cart_item is None:
             return None
@@ -142,7 +129,6 @@ class CartManager:
     @staticmethod
     async def delete_cart_item(session: AsyncSession, cart_item_id: int) -> bool:
         """Удалить товар из корзины."""
-
         cart_item = await session.get(CartItem, cart_item_id)
         if cart_item is None:
             return False
@@ -154,8 +140,5 @@ class CartManager:
     @staticmethod
     async def clear_cart(session: AsyncSession, cart_id: int) -> None:
         """Удалить все товары из корзины."""
-
-        await session.execute(
-            delete(CartItem).where(CartItem.cart_id == cart_id)
-        )
+        await session.execute(delete(CartItem).where(CartItem.cart_id == cart_id))
         await session.commit()

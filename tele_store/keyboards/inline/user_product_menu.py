@@ -19,7 +19,6 @@ async def get_user_product_keyboard(
     page: int = 1,
 ) -> tuple[InlineKeyboardMarkup, int]:
     """Сформировать клавиатуру с товарами выбранной категории."""
-
     builder = InlineKeyboardBuilder()
 
     products = await ProductManager.list_products(

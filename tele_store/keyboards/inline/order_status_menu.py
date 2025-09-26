@@ -17,8 +17,7 @@ STATUS_TITLES: dict[OrderStatus, str] = {
 def order_status_keyboard(
     *, order_id: int, current_status: OrderStatus
 ) -> InlineKeyboardMarkup:
-    """Собрать клавиатуру для смены статуса заказа."""
-
+    """Собрать клавиатуру для смены статуса заказа (статусы по 2 в ряд)."""
     builder = InlineKeyboardBuilder()
 
     for status, title in STATUS_TITLES.items():
@@ -29,12 +28,20 @@ def order_status_keyboard(
             button_text = title
             callback_data = f"order_status:{order_id}:{status.value}"
 
-        builder.row(InlineKeyboardButton(text=button_text, callback_data=callback_data))
+        builder.button(text=button_text, callback_data=callback_data)
+
+    builder.adjust(2)
 
     builder.row(
         InlineKeyboardButton(
             text="⬅️ К списку заказов",
             callback_data="orders_list",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="🗑 Удалить заказ",
+            callback_data=f"delete_order:{order_id}",
         )
     )
     builder.row(

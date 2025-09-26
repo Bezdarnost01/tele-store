@@ -4,16 +4,17 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
 from aiogram import Router
 
 from tele_store.keyboards.inline.cancel_button import cancel_key
-from tele_store.keyboards.inline.select_delivery_method import select_delivery_method_keyboard
+from tele_store.keyboards.inline.select_delivery_method import (
+    select_delivery_method_keyboard,
+)
 from tele_store.states.states import NewDelivery
 
 if TYPE_CHECKING:
-    from decimal import Decimal
+    from aiogram.fsm.context import FSMContext
+    from aiogram.types import Message
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -22,7 +23,6 @@ logger = logging.getLogger(__name__)
 @router.message(NewDelivery.name)
 async def process_order_name(message: Message, state: FSMContext) -> None:
     """Запросить имя покупателя."""
-
     name = message.text.strip()
     if not name:
         await message.answer(
@@ -42,7 +42,6 @@ async def process_order_name(message: Message, state: FSMContext) -> None:
 @router.message(NewDelivery.phone_number)
 async def process_order_phone(message: Message, state: FSMContext) -> None:
     """Получить контактный номер пользователя."""
-
     raw_phone = message.text.strip()
     digits_only = re.sub(r"\D", "", raw_phone)
 
@@ -64,7 +63,6 @@ async def process_order_phone(message: Message, state: FSMContext) -> None:
 @router.message(NewDelivery.address)
 async def process_order_address(message: Message, state: FSMContext) -> None:
     """Сохранить адрес доставки пользователя."""
-
     address = message.text.strip()
     if not address:
         await message.answer(
@@ -76,5 +74,6 @@ async def process_order_address(message: Message, state: FSMContext) -> None:
     await state.update_data(address=address)
     await state.set_state(NewDelivery.delivery_method)
     await message.answer(
-        "🚚 Какой способ доставки предпочитаете?", reply_markup=select_delivery_method_keyboard()
+        "🚚 Какой способ доставки предпочитаете?",
+        reply_markup=select_delivery_method_keyboard(),
     )

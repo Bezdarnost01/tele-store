@@ -10,6 +10,9 @@ from tele_store.db.enums import OrderStatus
 class CreateOrder(BaseModel):
     order_number: str
     tg_id: int | None = None
+    name: str
+    phone: int
+    addres: str
     total_price: Decimal = Decimal(0)
     delivery_method: str | None = None
     status: OrderStatus = OrderStatus.NEW
