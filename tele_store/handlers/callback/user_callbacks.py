@@ -15,8 +15,9 @@ from tele_store.keyboards.inline.cancel_button import cancel_key
 from tele_store.keyboards.inline.product_order_menu import product_order_keyboard
 from tele_store.keyboards.inline.user_category_menu import get_user_category_keyboard
 from tele_store.keyboards.inline.user_product_menu import get_user_product_keyboard
+from tele_store.keyboards.inline.order_confirm_menu import order_confirm_keyboard
 from tele_store.schemas.order import CreateOrder, CreateOrderItem
-from tele_store.states.states import RegNewUser
+from tele_store.states.states import NewDelivery
 
 if TYPE_CHECKING:
     from decimal import Decimal
@@ -177,7 +178,7 @@ async def open_cart(call: CallbackQuery) -> None:
 async def cancel_order(call: CallbackQuery, state: FSMContext) -> None:
     """Отменить оформление заказа на этапе подтверждения."""
 
-    if await state.get_state() == RegNewUser.confirm.state:
+    if await state.get_state() == NewDelivery.confirm.state:
         await state.clear()
     await call.message.edit_text("❌ Оформление заказа отменено.")
     await call.answer()
@@ -197,7 +198,7 @@ async def start_order(
         return
 
     await state.clear()
-    await state.set_state(RegNewUser.name)
+    await state.set_state(NewDelivery.name)
     await state.update_data(
         product_id=product.id,
         product_name=product.name,
@@ -210,8 +211,49 @@ async def start_order(
     )
     await call.answer()
 
+@router.callback_query(
+    NewDelivery.delivery_method,
+    F.data.in_(["select_courier", "select_self-delivery"])
+)
+async def confirm_order(
+    call: CallbackQuery, session: AsyncSession, state: FSMContext
+) -> None:
+    """Получить желаемый метод доставки."""
 
-@router.callback_query(RegNewUser.confirm, F.data == "confirm_order")
+    delivery_method = (
+        "Курьер" if call.data == "select_courier" else "Самовывоз"
+    )
+
+    if not delivery_method:
+        await call.message.answer(
+            "❌ Нужно указать способ доставки. Например: курьером или самовывоз.",
+            reply_markup=cancel_key(),
+        )
+        return
+
+    await state.update_data(delivery_method=delivery_method)
+    await state.set_state(NewDelivery.confirm)
+    await call.answer()
+
+    data = await state.get_data()
+    product_name = data.get("product_name", "—")
+    product_price: Decimal | str | None = data.get("product_price")
+    price_text = str(product_price) if product_price is not None else "—"
+
+    preview = (
+        "📦 <b>Проверьте данные заказа</b>\n\n"
+        f"Товар: {product_name}\n"
+        f"Стоимость: {price_text} ₽\n\n"
+        f"Имя: {data.get('name')}\n"
+        f"Телефон: {data.get('phone_number')}\n"
+        f"Адрес: {data.get('address')}\n"
+        f"Доставка: {delivery_method}\n\n"
+        "Если всё верно — подтвердите оформление."
+    )
+
+    await call.message.answer(preview, reply_markup=order_confirm_keyboard())
+
+@router.callback_query(NewDelivery.confirm, F.data == "confirm_order")
 async def confirm_order(
     call: CallbackQuery, session: AsyncSession, state: FSMContext
 ) -> None:
