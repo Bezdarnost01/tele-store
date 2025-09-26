@@ -16,8 +16,15 @@ def product_order_keyboard(
 
     builder.row(
         InlineKeyboardButton(
-            text="🛍 Оформить заказ",
-            callback_data=f"order_product:{product_id}",
+            text="➕ Добавить в корзину",
+            callback_data=f"add_to_cart:{product_id}",
+        )
+    )
+
+    builder.row(
+        InlineKeyboardButton(
+            text="🛒 Перейти в корзину",
+            callback_data="cart",
         )
     )
 
