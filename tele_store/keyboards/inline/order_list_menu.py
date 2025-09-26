@@ -7,6 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from tele_store.config.config_reader import config
 from tele_store.crud.order import OrderManager
+from tele_store.keyboards.inline.order_status_menu import STATUS_TITLES
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,9 +25,10 @@ async def get_order_list_menu_keyboard(
     page_orders = order_list[start:end]
 
     for order in page_orders:
+        status_title = STATUS_TITLES.get(order.status, str(order.status))
         builder.row(
             InlineKeyboardButton(
-                text=f"{order.order_number}",
+                text=f"{order.order_number} · {status_title}",
                 callback_data=f"order_preview:{order.id}",
             )
         )
@@ -38,11 +40,15 @@ async def get_order_list_menu_keyboard(
 
     if page > 1:
         pagination_buttons.append(
-            InlineKeyboardButton(text="⬅️ Назад", callback_data=f"page:{page - 1}")
+            InlineKeyboardButton(
+                text="⬅️ Назад", callback_data=f"orders_page:{page - 1}"
+            )
         )
     if page < total_pages:
         pagination_buttons.append(
-            InlineKeyboardButton(text="Вперёд ➡️", callback_data=f"page:{page + 1}")
+            InlineKeyboardButton(
+                text="Вперёд ➡️", callback_data=f"orders_page:{page + 1}"
+            )
         )
 
     if pagination_buttons:
