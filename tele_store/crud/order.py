@@ -33,7 +33,7 @@ class OrderManager:
             tg_id=payload.tg_id,
             name=payload.name,
             phone=payload.phone,
-            addres=payload.addres,
+            address=payload.address,
             total_price=payload.total_price,
             delivery_method=payload.delivery_method,
             status=payload.status,

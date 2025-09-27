@@ -11,8 +11,8 @@ class CreateOrder(BaseModel):
     order_number: str
     tg_id: int | None = None
     name: str
-    phone: int
-    addres: str
+    phone: str
+    address: str
     total_price: Decimal = Decimal(0)
     delivery_method: str | None = None
     status: OrderStatus = OrderStatus.NEW
@@ -21,6 +21,9 @@ class CreateOrder(BaseModel):
 class UpdateOrder(BaseModel):
     order_number: str | None = None
     tg_id: int | None = None
+    name: str | None = None
+    phone: str | None = None
+    address: str | None = None
     total_price: Decimal | None = None
     delivery_method: str | None = None
     status: OrderStatus | None = None

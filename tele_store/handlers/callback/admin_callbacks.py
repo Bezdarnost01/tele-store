@@ -49,7 +49,7 @@ def build_order_preview_text(order: Order) -> str:
     delivery_text = order.delivery_method or "Не указана"
     phone = order.phone
     name = order.name
-    addres = order.addres
+    address = order.address
 
     lines: list[str] = []
     for index, item in enumerate(order.items, start=1):
@@ -76,7 +76,7 @@ def build_order_preview_text(order: Order) -> str:
         f"Покупатель: {customer_text}\n"
         f"Имя: {name}\n"
         f"Номер телефона: {phone}\n"
-        f"Адрес доставки: {addres}\n"
+        f"Адрес доставки: {address}\n"
         f"Сумма: {format_money(order.total_price)}\n"
         f"Доставка: {delivery_text}\n\n"
         f"Состав заказа:\n{items_block}"

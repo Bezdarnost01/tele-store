@@ -158,8 +158,8 @@ class Order(Base):
         ForeignKey("users.tg_id", ondelete="SET NULL"), nullable=True, index=True
     )
     name: Mapped[str] = mapped_column(String, nullable=False)
-    phone: Mapped[int] = mapped_column(Integer, nullable=False)
-    addres: Mapped[str] = mapped_column(String, nullable=False)
+    phone: Mapped[str] = mapped_column(String(32), nullable=False)
+    address: Mapped[str] = mapped_column(String, nullable=False)
     total_price: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=0
     )

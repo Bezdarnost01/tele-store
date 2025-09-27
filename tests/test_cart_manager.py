@@ -1,37 +1,11 @@
-import os
 from decimal import Decimal
 
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
-os.environ.setdefault("BOT_TOKEN", "test-token")
-os.environ.setdefault("ADMINS", "[1]")
-os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
-os.environ.setdefault("ITEMS_PER_PAGE", "10")
-os.environ.setdefault("ORDERS_PER_PAGE", "10")
-os.environ.setdefault("CATEGORIES_PER_PAGE", "10")
-os.environ.setdefault("PRODUCTS_PER_PAGE", "10")
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tele_store.crud.cart import CartManager
-from tele_store.db.db import Base
 from tele_store.models.models import Category, Product, User
 from tele_store.schemas.cart import AddCartItem, UpdateCartItemCount
-
-
-@pytest_asyncio.fixture
-async def session() -> AsyncSession:
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:?cache=shared")
-
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-
-    TestingSession = async_sessionmaker(engine, expire_on_commit=False)
-
-    async with TestingSession() as session:
-        yield session
-
-    await engine.dispose()
 
 
 async def create_user_with_cart(session: AsyncSession, tg_id: int) -> int:

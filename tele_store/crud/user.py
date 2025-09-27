@@ -32,9 +32,10 @@ class UserManager:
             await session.refresh(user)
             return user
 
-    async def get_user(self: AsyncSession, tg_id: int) -> User | None:
+    @staticmethod
+    async def get_user(session: AsyncSession, tg_id: int) -> User | None:
         """Получить пользователя по идентификатору."""
-        res = await self.execute(select(User).where(User.tg_id == tg_id))
+        res = await session.execute(select(User).where(User.tg_id == tg_id))
         return res.scalar_one_or_none()
 
     @staticmethod
